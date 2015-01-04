@@ -1,50 +1,83 @@
 
 #include "Digit.h"
 
-const int BUTTON_PIN = 2;
+const int BUTTON_A = 2;
+const int BUTTON_B = 3;
 
-const int LED_PINS[] = { 11, 10, 9, 8 };
-const int LED_PINS_LENGTH = 4;
-int counter;
-int buttonState;
+const int A_PINS[] = { 10, 11, 12, 13 };
+const int B_PINS[] = { 6, 7, 8, 9 };
+const int SUM_PINS[] = { 0, 1, 4, 5 };
 
-Digit digits[LED_PINS_LENGTH];
+const int NUM_LENGTH = 4;
+
+int a;
+int b;
+int sum;
+
+int buttonStateA;
+int buttonStateB;
+
+Digit digitsA[NUM_LENGTH];
+Digit digitsB[NUM_LENGTH];
+Digit digitsSum[NUM_LENGTH];
 
 void setup() {
-  pinMode(BUTTON_PIN, INPUT);
+  pinMode(BUTTON_A, INPUT);
+  pinMode(BUTTON_B, INPUT);
 
-  counter = 1;
-  buttonState = HIGH;
+  a = 1;
+  b = 1;
 
-  for (int i = 0; i < LED_PINS_LENGTH; i++ ) {
-    digits[i].init(0, LED_PINS[i]);
+  sum = a + b;
+
+  buttonStateA = HIGH;
+  buttonStateB = HIGH;
+
+  for (int i = 0; i < NUM_LENGTH; i++ ) {
+    digitsA[i].init(0, A_PINS[i]);
+    digitsB[i].init(0, B_PINS[i]);
+    digitsSum[i].init(0, SUM_PINS[i]);
   }
 
-  renderLEDs();
+  renderLEDs(digitsA, a);
+  renderLEDs(digitsB, b);
+  renderLEDs(digitsSum, sum);
 }
 
 void loop() {
-  buttonState = digitalRead(BUTTON_PIN);
-  if ( buttonState == LOW ) {
-    incrementCounter();
-    renderLEDs();
+  buttonStateA = digitalRead(BUTTON_A);
+  buttonStateB = digitalRead(BUTTON_B);
+
+  if ( buttonStateA == LOW ) {
+    a = incr(a, buttonStateA);
+    sum = a + b;
+    renderLEDs(digitsA, a);
+    renderLEDs(digitsSum, sum);
+    delay(333);
+  }
+
+  if ( buttonStateB == LOW ) {
+    b = incr(b, buttonStateB);
+    sum = a + b;
+    renderLEDs(digitsB, b);
+    renderLEDs(digitsSum, sum);
     delay(333);
   }
 }
 
-void incrementCounter() {
+int incr(int number, int buttonState) {
   if ( buttonState == LOW ) {
-    if ( counter >= 16 ) {
-      counter = 1;
+    if ( number >= 16 ) {
+      return 1;
     } else {
-      counter++;
+      return number + 1;
     }
   }
 }
 
-void renderLEDs() {
-  for (int i = 0; i < LED_PINS_LENGTH; i++ ) {
-    int digit = (counter >> i);
+void renderLEDs(Digit digits[], int value) {
+  for (int i = 0; i < NUM_LENGTH; i++ ) {
+    int digit = (value >> i);
     digit = digit & B0001;
     if ( digit == 1) {
       digits[i].setVal(1);
